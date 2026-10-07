@@ -1,0 +1,19 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  @apply bg-ink-50 text-ink-800 antialiased;
+}
+
+/* Thin scrollbars for horizontal org chart scroll */
+.org-scroll::-webkit-scrollbar {
+  height: 8px;
+}
+.org-scroll::-webkit-scrollbar-track {
+  background: #f5f5f4;
+}
+.org-scroll::-webkit-scrollbar-thumb {
+  background: #d6d3d1;
+  border-radius: 4px;
+}
