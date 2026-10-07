@@ -1,0 +1,257 @@
+// Industry templates: typical functions, positions, and KPI hints per industry.
+// Used as context for the Gemini blueprint prompt — guidance, not rigid rules.
+
+export interface IndustryTemplate {
+  id: string;
+  label: string;
+  functions: string[];
+  positions: { title: string; reportsTo: string; kpiHints: string[] }[];
+}
+
+export const INDUSTRIES: IndustryTemplate[] = [
+  {
+    id: "tree-service",
+    label: "Tree Service",
+    functions: ["Marketing", "Lead Intake", "Sales / Estimating", "Scheduling", "Production (Crews)", "Equipment / Fleet", "Safety", "Customer Service", "Billing / Collections", "Bookkeeping", "Hiring / Recruiting", "Purchasing"],
+    positions: [
+      { title: "Owner / CEO", reportsTo: "", kpiHints: ["Revenue", "Net profit", "Owner hours/week"] },
+      { title: "General Manager", reportsTo: "Owner / CEO", kpiHints: ["Revenue vs target", "Gross margin", "Employee retention"] },
+      { title: "Sales / Estimator", reportsTo: "General Manager", kpiHints: ["Estimates/week", "Close rate", "Average ticket"] },
+      { title: "Operations Manager", reportsTo: "General Manager", kpiHints: ["Jobs completed/day", "On-time rate", "Crew utilization"] },
+      { title: "Office Manager", reportsTo: "General Manager", kpiHints: ["Invoices out on time", "A/R days", "Schedule fill rate"] },
+      { title: "Customer Service Rep", reportsTo: "Office Manager", kpiHints: ["Calls answered", "Reviews generated", "Callback time"] },
+      { title: "Crew Leader", reportsTo: "Operations Manager", kpiHints: ["Jobs/day", "Safety incidents", "Crew efficiency"] },
+      { title: "Climber", reportsTo: "Crew Leader", kpiHints: ["Jobs completed", "Safety compliance"] },
+      { title: "Ground Crew", reportsTo: "Crew Leader", kpiHints: ["Jobs completed", "Cleanup quality"] },
+      { title: "Bookkeeper", reportsTo: "Office Manager", kpiHints: ["Books closed by day 5", "Payroll accuracy"] },
+    ],
+  },
+  {
+    id: "hvac",
+    label: "HVAC",
+    functions: ["Marketing", "Lead Intake", "Sales / Estimating", "Dispatch / Scheduling", "Install Crews", "Service Technicians", "Customer Service", "Billing / Collections", "Bookkeeping", "Hiring / Recruiting", "Purchasing / Inventory"],
+    positions: [
+      { title: "Owner / CEO", reportsTo: "", kpiHints: ["Revenue", "Net profit", "Owner hours/week"] },
+      { title: "General Manager", reportsTo: "Owner / CEO", kpiHints: ["Revenue vs target", "Gross margin", "Employee retention"] },
+      { title: "Sales / Comfort Advisor", reportsTo: "General Manager", kpiHints: ["Estimates/week", "Close rate", "Average ticket"] },
+      { title: "Service Manager", reportsTo: "General Manager", kpiHints: ["Service revenue", "First-time fix rate", "Technician utilization"] },
+      { title: "Install Manager", reportsTo: "General Manager", kpiHints: ["Installs/week", "Install margin", "Callback rate"] },
+      { title: "Dispatcher", reportsTo: "Service Manager", kpiHints: ["Calls booked", "Technician utilization", "Response time"] },
+      { title: "Lead Technician", reportsTo: "Service Manager", kpiHints: ["Jobs/day", "Upsell rate", "Customer rating"] },
+      { title: "Technician", reportsTo: "Lead Technician", kpiHints: ["Jobs/day", "First-time fix rate"] },
+      { title: "Office Manager", reportsTo: "General Manager", kpiHints: ["A/R days", "Schedule fill rate"] },
+      { title: "Bookkeeper", reportsTo: "Office Manager", kpiHints: ["Books closed by day 5"] },
+    ],
+  },
+  {
+    id: "plumbing",
+    label: "Plumbing",
+    functions: ["Marketing", "Lead Intake", "Sales / Estimating", "Dispatch / Scheduling", "Service Plumbers", "Install Crews", "Customer Service", "Billing / Collections", "Bookkeeping", "Hiring / Recruiting", "Purchasing / Inventory"],
+    positions: [
+      { title: "Owner / CEO", reportsTo: "", kpiHints: ["Revenue", "Net profit", "Owner hours/week"] },
+      { title: "General Manager", reportsTo: "Owner / CEO", kpiHints: ["Revenue vs target", "Gross margin"] },
+      { title: "Service Manager", reportsTo: "General Manager", kpiHints: ["Service revenue", "Technician utilization", "Callback rate"] },
+      { title: "Dispatcher / CSR", reportsTo: "Service Manager", kpiHints: ["Calls booked", "Booking rate"] },
+      { title: "Lead Plumber", reportsTo: "Service Manager", kpiHints: ["Jobs/day", "Average ticket", "Customer rating"] },
+      { title: "Plumber", reportsTo: "Lead Plumber", kpiHints: ["Jobs/day", "First-time fix rate"] },
+      { title: "Apprentice", reportsTo: "Lead Plumber", kpiHints: ["Training milestones"] },
+      { title: "Office Manager", reportsTo: "General Manager", kpiHints: ["A/R days", "Invoicing speed"] },
+      { title: "Bookkeeper", reportsTo: "Office Manager", kpiHints: ["Books closed by day 5"] },
+    ],
+  },
+  {
+    id: "roofing",
+    label: "Roofing",
+    functions: ["Marketing", "Lead Intake", "Sales / Estimating", "Project Scheduling", "Production Crews", "Quality Control", "Customer Service", "Billing / Collections", "Bookkeeping", "Hiring / Recruiting", "Material Ordering"],
+    positions: [
+      { title: "Owner / CEO", reportsTo: "", kpiHints: ["Revenue", "Net profit", "Owner hours/week"] },
+      { title: "General Manager", reportsTo: "Owner / CEO", kpiHints: ["Revenue vs target", "Gross margin"] },
+      { title: "Sales Rep", reportsTo: "General Manager", kpiHints: ["Estimates/week", "Close rate", "Average ticket"] },
+      { title: "Production Manager", reportsTo: "General Manager", kpiHints: ["Jobs/week", "On-time completion", "Crew efficiency"] },
+      { title: "Crew Leader", reportsTo: "Production Manager", kpiHints: ["Roofs/week", "Quality score", "Safety"] },
+      { title: "Office Manager", reportsTo: "General Manager", kpiHints: ["A/R days", "Permit turnaround"] },
+      { title: "Customer Service Rep", reportsTo: "Office Manager", kpiHints: ["Reviews", "Response time"] },
+      { title: "Bookkeeper", reportsTo: "Office Manager", kpiHints: ["Books closed by day 5"] },
+    ],
+  },
+  {
+    id: "landscaping",
+    label: "Landscaping",
+    functions: ["Marketing", "Lead Intake", "Sales / Estimating", "Route Scheduling", "Mow Crews", "Landscape Install Crews", "Customer Service", "Billing / Collections", "Bookkeeping", "Hiring / Recruiting", "Equipment Maintenance"],
+    positions: [
+      { title: "Owner / CEO", reportsTo: "", kpiHints: ["Revenue", "Net profit", "Owner hours/week"] },
+      { title: "General Manager", reportsTo: "Owner / CEO", kpiHints: ["Revenue vs target", "Route density", "Retention"] },
+      { title: "Sales / Estimator", reportsTo: "General Manager", kpiHints: ["Estimates/week", "Close rate"] },
+      { title: "Operations Manager", reportsTo: "General Manager", kpiHints: ["Routes completed", "Crew utilization"] },
+      { title: "Crew Leader", reportsTo: "Operations Manager", kpiHints: ["Stops/day", "Quality score"] },
+      { title: "Office Manager", reportsTo: "General Manager", kpiHints: ["A/R days", "Route fill"] },
+      { title: "Bookkeeper", reportsTo: "Office Manager", kpiHints: ["Books closed by day 5"] },
+    ],
+  },
+  {
+    id: "construction",
+    label: "Construction / Remodeling",
+    functions: ["Marketing", "Lead Intake", "Sales / Estimating", "Project Management", "Scheduling", "Subcontractor Management", "Quality Control", "Customer Service", "Billing / Collections", "Bookkeeping", "Permitting", "Purchasing"],
+    positions: [
+      { title: "Owner / CEO", reportsTo: "", kpiHints: ["Revenue", "Net profit", "Owner hours/week"] },
+      { title: "General Manager", reportsTo: "Owner / CEO", kpiHints: ["Revenue vs target", "Gross margin per job"] },
+      { title: "Sales / Estimator", reportsTo: "General Manager", kpiHints: ["Estimates/week", "Close rate", "Average job size"] },
+      { title: "Project Manager", reportsTo: "General Manager", kpiHints: ["Jobs on schedule", "Budget variance", "Punch-list closure"] },
+      { title: "Lead Carpenter", reportsTo: "Project Manager", kpiHints: ["Production rate", "Quality score"] },
+      { title: "Office Manager", reportsTo: "General Manager", kpiHints: ["A/R days", "Permit turnaround"] },
+      { title: "Bookkeeper", reportsTo: "Office Manager", kpiHints: ["Job costing accuracy"] },
+    ],
+  },
+  {
+    id: "electrical",
+    label: "Electrical",
+    functions: ["Marketing", "Lead Intake", "Sales / Estimating", "Dispatch / Scheduling", "Service Electricians", "Project Crews", "Customer Service", "Billing / Collections", "Bookkeeping", "Hiring / Recruiting"],
+    positions: [
+      { title: "Owner / CEO", reportsTo: "", kpiHints: ["Revenue", "Net profit", "Owner hours/week"] },
+      { title: "General Manager", reportsTo: "Owner / CEO", kpiHints: ["Revenue vs target", "Gross margin"] },
+      { title: "Service Manager", reportsTo: "General Manager", kpiHints: ["Service revenue", "Utilization"] },
+      { title: "Lead Electrician", reportsTo: "Service Manager", kpiHints: ["Jobs/day", "Average ticket"] },
+      { title: "Electrician", reportsTo: "Lead Electrician", kpiHints: ["Jobs/day", "Callback rate"] },
+      { title: "Dispatcher / CSR", reportsTo: "Service Manager", kpiHints: ["Booking rate"] },
+      { title: "Office Manager", reportsTo: "General Manager", kpiHints: ["A/R days"] },
+      { title: "Bookkeeper", reportsTo: "Office Manager", kpiHints: ["Books closed by day 5"] },
+    ],
+  },
+  {
+    id: "pest-control",
+    label: "Pest Control",
+    functions: ["Marketing", "Lead Intake", "Sales", "Route Scheduling", "Service Technicians", "Customer Service", "Billing / Collections", "Bookkeeping", "Hiring / Recruiting"],
+    positions: [
+      { title: "Owner / CEO", reportsTo: "", kpiHints: ["Revenue", "Net profit", "Owner hours/week"] },
+      { title: "General Manager", reportsTo: "Owner / CEO", kpiHints: ["Recurring revenue", "Churn rate"] },
+      { title: "Sales Rep", reportsTo: "General Manager", kpiHints: ["New accounts/month", "Close rate"] },
+      { title: "Service Manager", reportsTo: "General Manager", kpiHints: ["Route completion", "Callback rate"] },
+      { title: "Technician", reportsTo: "Service Manager", kpiHints: ["Stops/day", "Upsell rate"] },
+      { title: "CSR / Dispatcher", reportsTo: "Service Manager", kpiHints: ["Retention saves", "Booking rate"] },
+      { title: "Office Manager", reportsTo: "General Manager", kpiHints: ["A/R days"] },
+    ],
+  },
+  {
+    id: "cleaning",
+    label: "Cleaning Services",
+    functions: ["Marketing", "Lead Intake", "Sales / Estimating", "Scheduling", "Cleaning Teams", "Quality Inspections", "Customer Service", "Billing / Collections", "Bookkeeping", "Hiring / Recruiting"],
+    positions: [
+      { title: "Owner / CEO", reportsTo: "", kpiHints: ["Revenue", "Net profit", "Owner hours/week"] },
+      { title: "Operations Manager", reportsTo: "Owner / CEO", kpiHints: ["Client retention", "Team utilization"] },
+      { title: "Sales Rep", reportsTo: "Operations Manager", kpiHints: ["New contracts/month"] },
+      { title: "Team Lead", reportsTo: "Operations Manager", kpiHints: ["Quality score", "On-time rate"] },
+      { title: "Cleaner", reportsTo: "Team Lead", kpiHints: ["Jobs completed", "Quality score"] },
+      { title: "Scheduler / CSR", reportsTo: "Operations Manager", kpiHints: ["Fill rate", "Response time"] },
+      { title: "Bookkeeper", reportsTo: "Owner / CEO", kpiHints: ["Books closed by day 5"] },
+    ],
+  },
+  {
+    id: "professional-services",
+    label: "Professional Services",
+    functions: ["Marketing", "Business Development", "Client Onboarding", "Service Delivery", "Project Management", "Client Success", "Billing / Collections", "Bookkeeping", "Hiring / Recruiting"],
+    positions: [
+      { title: "Owner / CEO", reportsTo: "", kpiHints: ["Revenue", "Net profit", "Owner hours/week"] },
+      { title: "Operations Manager", reportsTo: "Owner / CEO", kpiHints: ["Utilization", "On-time delivery"] },
+      { title: "Business Developer", reportsTo: "Owner / CEO", kpiHints: ["Pipeline value", "Close rate"] },
+      { title: "Senior Practitioner", reportsTo: "Operations Manager", kpiHints: ["Billable utilization", "Client satisfaction"] },
+      { title: "Practitioner", reportsTo: "Senior Practitioner", kpiHints: ["Billable utilization"] },
+      { title: "Client Success Manager", reportsTo: "Operations Manager", kpiHints: ["Retention", "NPS"] },
+      { title: "Bookkeeper", reportsTo: "Owner / CEO", kpiHints: ["A/R days"] },
+    ],
+  },
+  {
+    id: "medical-dental",
+    label: "Medical / Dental Practice",
+    functions: ["Marketing", "Patient Intake", "Scheduling", "Clinical Delivery", "Insurance / Billing", "Patient Follow-up", "Bookkeeping", "Hiring / Recruiting", "Compliance"],
+    positions: [
+      { title: "Owner / Practitioner", reportsTo: "", kpiHints: ["Revenue", "Net profit", "Owner hours/week"] },
+      { title: "Practice Manager", reportsTo: "Owner / Practitioner", kpiHints: ["Schedule fill", "Collections rate"] },
+      { title: "Associate Practitioner", reportsTo: "Owner / Practitioner", kpiHints: ["Production", "Case acceptance"] },
+      { title: "Front Desk / Scheduler", reportsTo: "Practice Manager", kpiHints: ["No-show rate", "Schedule fill"] },
+      { title: "Billing Specialist", reportsTo: "Practice Manager", kpiHints: ["Days in A/R", "Denial rate"] },
+      { title: "Clinical Assistant", reportsTo: "Associate Practitioner", kpiHints: ["Chair turnover", "Patient satisfaction"] },
+      { title: "Bookkeeper", reportsTo: "Practice Manager", kpiHints: ["Books closed by day 5"] },
+    ],
+  },
+  {
+    id: "restaurant",
+    label: "Restaurant",
+    functions: ["Marketing", "Reservations", "Front of House", "Back of House", "Inventory / Purchasing", "Staff Scheduling", "Customer Service", "Bookkeeping", "Hiring / Recruiting"],
+    positions: [
+      { title: "Owner / CEO", reportsTo: "", kpiHints: ["Revenue", "Net profit", "Owner hours/week"] },
+      { title: "General Manager", reportsTo: "Owner / CEO", kpiHints: ["Revenue", "Labor %", "Food cost %"] },
+      { title: "Head Chef", reportsTo: "General Manager", kpiHints: ["Food cost %", "Ticket times"] },
+      { title: "Sous Chef", reportsTo: "Head Chef", kpiHints: ["Prep completion", "Waste %"] },
+      { title: "Front of House Lead", reportsTo: "General Manager", kpiHints: ["Table turns", "Guest satisfaction"] },
+      { title: "Server", reportsTo: "Front of House Lead", kpiHints: ["Average check", "Reviews"] },
+      { title: "Bookkeeper", reportsTo: "General Manager", kpiHints: ["Prime cost tracking"] },
+    ],
+  },
+  {
+    id: "retail",
+    label: "Retail",
+    functions: ["Marketing", "Merchandising", "Sales Floor", "Inventory Management", "Customer Service", "Bookkeeping", "Hiring / Recruiting", "Purchasing"],
+    positions: [
+      { title: "Owner / CEO", reportsTo: "", kpiHints: ["Revenue", "Net profit", "Owner hours/week"] },
+      { title: "Store Manager", reportsTo: "Owner / CEO", kpiHints: ["Revenue vs target", "Conversion rate"] },
+      { title: "Assistant Manager", reportsTo: "Store Manager", kpiHints: ["Shrink %", "Staff coverage"] },
+      { title: "Sales Associate", reportsTo: "Assistant Manager", kpiHints: ["Sales/hour", "Units per transaction"] },
+      { title: "Inventory Specialist", reportsTo: "Store Manager", kpiHints: ["Stockout rate", "Inventory accuracy"] },
+      { title: "Bookkeeper", reportsTo: "Owner / CEO", kpiHints: ["Books closed by day 5"] },
+    ],
+  },
+  {
+    id: "ecommerce",
+    label: "E-commerce",
+    functions: ["Marketing / Ads", "Website Management", "Fulfillment", "Customer Service", "Inventory", "Bookkeeping", "Product Sourcing"],
+    positions: [
+      { title: "Owner / CEO", reportsTo: "", kpiHints: ["Revenue", "Net profit", "Owner hours/week"] },
+      { title: "Marketing Manager", reportsTo: "Owner / CEO", kpiHints: ["ROAS", "CAC", "Conversion rate"] },
+      { title: "Operations / Fulfillment Lead", reportsTo: "Owner / CEO", kpiHints: ["Ship time", "Error rate"] },
+      { title: "Customer Service Rep", reportsTo: "Operations / Fulfillment Lead", kpiHints: ["Response time", "CSAT"] },
+      { title: "Bookkeeper", reportsTo: "Owner / CEO", kpiHints: ["Books closed by day 5"] },
+    ],
+  },
+  {
+    id: "agency",
+    label: "Agency / Consulting",
+    functions: ["Marketing", "Sales / Proposals", "Client Onboarding", "Service Delivery", "Account Management", "Billing / Collections", "Bookkeeping", "Hiring / Recruiting"],
+    positions: [
+      { title: "Owner / CEO", reportsTo: "", kpiHints: ["Revenue", "Net profit", "Owner hours/week"] },
+      { title: "Account Manager", reportsTo: "Owner / CEO", kpiHints: ["Retention", "Upsell revenue"] },
+      { title: "Sales / Business Developer", reportsTo: "Owner / CEO", kpiHints: ["Pipeline", "Close rate"] },
+      { title: "Delivery Lead", reportsTo: "Owner / CEO", kpiHints: ["On-time delivery", "Utilization"] },
+      { title: "Specialist", reportsTo: "Delivery Lead", kpiHints: ["Output quality", "Throughput"] },
+      { title: "Bookkeeper", reportsTo: "Owner / CEO", kpiHints: ["A/R days"] },
+    ],
+  },
+  {
+    id: "other",
+    label: "Other",
+    functions: ["Marketing", "Sales", "Scheduling", "Production / Delivery", "Customer Service", "Billing / Collections", "Bookkeeping", "Hiring"],
+    positions: [
+      { title: "Owner / CEO", reportsTo: "", kpiHints: ["Revenue", "Net profit", "Owner hours/week"] },
+      { title: "Operations Manager", reportsTo: "Owner / CEO", kpiHints: ["Throughput", "Quality"] },
+      { title: "Sales Rep", reportsTo: "Owner / CEO", kpiHints: ["Close rate", "Revenue"] },
+      { title: "Customer Service Rep", reportsTo: "Operations Manager", kpiHints: ["Satisfaction", "Response time"] },
+      { title: "Bookkeeper", reportsTo: "Owner / CEO", kpiHints: ["Books closed by day 5"] },
+    ],
+  },
+];
+
+export const getIndustry = (id: string): IndustryTemplate =>
+  INDUSTRIES.find((i) => i.id === id) ?? INDUSTRIES[INDUSTRIES.length - 1];
+
+export const DEFAULT_FUNCTIONS = [
+  "Marketing",
+  "Lead Intake",
+  "Sales",
+  "Estimating",
+  "Scheduling",
+  "Production",
+  "Customer Service",
+  "Billing / Collections",
+  "Bookkeeping",
+  "Hiring",
+  "Purchasing",
+];
