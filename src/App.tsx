@@ -8,6 +8,8 @@ import ResultsDashboard from "./components/ResultsDashboard";
 import { getIndustry } from "./data/industries";
 import type { Blueprint, WizardData } from "./types";
 import { emptyVision, emptyCurrentState, emptyFutureState } from "./types";
+import type { SnapshotV1 } from "./lib/snapshot";
+import { formatSnapshotDate } from "./lib/snapshot";
 
 type Step = "welcome" | "industry" | "vision" | "current" | "future" | "results";
 
@@ -37,6 +39,9 @@ export default function App() {
   const [building, setBuilding] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [restored] = useState(() => loadStored());
+  // Snapshot loaded from a file for this meeting (in-memory only, not persisted).
+  const [previous, setPrevious] = useState<SnapshotV1 | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
 
   // Restore previous session once
   useEffect(() => {
@@ -105,6 +110,8 @@ export default function App() {
   const restart = () => {
     setData(freshData());
     setBlueprint(null);
+    setPrevious(null);
+    setNotice(null);
     setStep("welcome");
     setError(null);
     try {
@@ -118,10 +125,41 @@ export default function App() {
     window.scrollTo(0, 0);
   };
 
-  if (step === "welcome") return <Welcome onStart={() => go("industry")} />;
+  const handleLoadSnapshot = (snap: SnapshotV1) => {
+    setData(snap.inputs);
+    setPrevious(snap);
+    setBlueprint(null);
+    setError(null);
+    setNotice(
+      `Loaded the ${formatSnapshotDate(snap.savedAt)} snapshot for ${snap.businessName || "your business"}. ` +
+      `Review and update what changed, then rebuild the blueprint.`
+    );
+    setStep("current");
+    window.scrollTo(0, 0);
+  };
+
+  const noticeBanner = notice ? (
+    <div className="border-b border-amber-300 bg-amber-50">
+      <div className="mx-auto flex max-w-3xl items-start justify-between gap-4 px-6 py-3">
+        <p className="text-sm text-amber-900">📂 {notice}</p>
+        <button onClick={() => setNotice(null)} className="shrink-0 text-sm font-semibold text-amber-700 underline">
+          Dismiss
+        </button>
+      </div>
+    </div>
+  ) : null;
+
+  const withNotice = (el: React.ReactNode) => (
+    <>
+      {noticeBanner}
+      {el}
+    </>
+  );
+
+  if (step === "welcome") return <Welcome onStart={() => go("industry")} onLoadSnapshot={handleLoadSnapshot} />;
 
   if (step === "industry")
-    return (
+    return withNotice(
       <IndustrySelect
         value={data.industry}
         onChange={(industry) => setData({ ...data, industry })}
@@ -131,7 +169,7 @@ export default function App() {
     );
 
   if (step === "vision")
-    return (
+    return withNotice(
       <VisionInterview
         data={data.vision}
         onChange={(vision) => setData({ ...data, vision })}
@@ -141,7 +179,7 @@ export default function App() {
     );
 
   if (step === "current")
-    return (
+    return withNotice(
       <CurrentState
         industryId={data.industry}
         data={data.currentState}
@@ -152,7 +190,7 @@ export default function App() {
     );
 
   if (step === "future")
-    return (
+    return withNotice(
       <>
         <FutureState
           hats={data.currentState.hats}
@@ -173,7 +211,18 @@ export default function App() {
     );
 
   if (step === "results" && blueprint)
-    return <ResultsDashboard blueprint={blueprint} onRestart={restart} />;
+    return (
+      <ResultsDashboard
+        blueprint={blueprint}
+        inputs={data}
+        previous={
+          previous
+            ? { blueprint: previous.blueprint, inputs: previous.inputs, savedAt: previous.savedAt }
+            : null
+        }
+        onRestart={restart}
+      />
+    );
 
-  return <Welcome onStart={() => go("industry")} />;
+  return <Welcome onStart={() => go("industry")} onLoadSnapshot={handleLoadSnapshot} />;
 }
