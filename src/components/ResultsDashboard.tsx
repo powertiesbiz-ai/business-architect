@@ -1,8 +1,19 @@
-import { useState } from "react";
-import type { Blueprint, PositionDetail } from "../types";
+import { useMemo, useState } from "react";
+import type { Blueprint, PositionDetail, WizardData } from "../types";
 import { ScoreBar } from "./ui";
 import OrgChart from "./OrgChart";
+import ProgressSinceLastMeeting from "./ProgressSinceLastMeeting";
 import { downloadBlueprintDocx } from "../lib/docx";
+import {
+  buildSnapshot,
+  compareBlueprints,
+  downloadSnapshot,
+  logSnapshot,
+  type BlueprintDelta,
+  type SnapshotV1,
+} from "../lib/snapshot";
+import { useDrive } from "../lib/drive";
+import DriveConnect from "./DriveConnect";
 
 const money = (n: number) => "$" + Math.round(n).toLocaleString("en-US");
 
@@ -68,12 +79,27 @@ function PositionCard({ p }: { p: PositionDetail }) {
   );
 }
 
-export default function ResultsDashboard({ blueprint, onRestart }: {
-  blueprint: Blueprint; onRestart: () => void;
+export interface PreviousSnapshot {
+  blueprint: Blueprint;
+  inputs: WizardData;
+  savedAt: string;
+}
+
+export default function ResultsDashboard({ blueprint, inputs, previous, onRestart }: {
+  blueprint: Blueprint;
+  inputs: WizardData;
+  previous: PreviousSnapshot | null;
+  onRestart: () => void;
 }) {
   const [selectedPosition, setSelectedPosition] = useState<string | null>(null);
   const [downloading, setDownloading] = useState(false);
   const [expanded, setExpanded] = useState<string | null>(null);
+  const [snapshotSaved, setSnapshotSaved] = useState(false);
+  const [driveSaving, setDriveSaving] = useState(false);
+  const [driveSavedName, setDriveSavedName] = useState<string | null>(null);
+  const [driveError, setDriveError] = useState<string | null>(null);
+  const { status: driveStatus, saveSnapshotToDrive } = useDrive();
+  const driveConnected = driveStatus === "connected";
 
   const bp = blueprint;
   const fm = bp.financialModel;
@@ -81,12 +107,49 @@ export default function ResultsDashboard({ blueprint, onRestart }: {
     ? bp.positions.find((p) => p.title === selectedPosition)
     : null;
 
+  const delta: BlueprintDelta | null = useMemo(() => {
+    if (!previous) return null;
+    const prevSnap: SnapshotV1 = {
+      snapshotVersion: 1,
+      savedAt: previous.savedAt,
+      businessName: previous.inputs.vision.businessName || previous.blueprint.businessName || "My Business",
+      inputs: previous.inputs,
+      blueprint: previous.blueprint,
+    };
+    return compareBlueprints(prevSnap, inputs, blueprint);
+  }, [previous, inputs, blueprint]);
+
   const handleDownload = async () => {
     setDownloading(true);
     try {
-      await downloadBlueprintDocx(bp);
+      await downloadBlueprintDocx(bp, delta ?? undefined);
     } finally {
       setDownloading(false);
+    }
+  };
+
+  const handleSaveSnapshot = () => {
+    const snap = buildSnapshot(inputs, blueprint);
+    downloadSnapshot(snap);
+    logSnapshot(snap.savedAt, snap.businessName);
+    setSnapshotSaved(true);
+    window.setTimeout(() => setSnapshotSaved(false), 4000);
+  };
+
+  const handleSaveToDrive = async () => {
+    setDriveSaving(true);
+    setDriveError(null);
+    setDriveSavedName(null);
+    try {
+      const snap = buildSnapshot(inputs, blueprint);
+      const { fileName } = await saveSnapshotToDrive(snap);
+      logSnapshot(snap.savedAt, snap.businessName);
+      setDriveSavedName(fileName);
+      window.setTimeout(() => setDriveSavedName(null), 5000);
+    } catch (e) {
+      setDriveError(e instanceof Error ? e.message : "Could not save to Google Drive.");
+    } finally {
+      setDriveSaving(false);
     }
   };
 
@@ -101,9 +164,25 @@ export default function ResultsDashboard({ blueprint, onRestart }: {
             <p className="text-xs font-bold uppercase tracking-[0.25em] text-blueprint-600">Business Blueprint</p>
             <h1 className="mt-1 font-serif text-3xl font-bold text-ink-900">{bp.businessName || "Your Business"}</h1>
           </div>
-          <div className="flex gap-3">
+          <div className="flex flex-wrap items-center gap-3">
             <button onClick={onRestart} className="rounded-lg border border-ink-300 px-5 py-2.5 text-sm font-semibold text-ink-700 hover:bg-ink-100">
               Start over
+            </button>
+            {driveConnected ? (
+              <button
+                onClick={handleSaveToDrive}
+                disabled={driveSaving}
+                className="rounded-lg bg-blueprint-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-blueprint-700 disabled:opacity-60"
+                title="Save this meeting's snapshot to your Google Drive"
+              >
+                {driveSaving ? "Saving…" : driveSavedName ? `✓ Saved: ${driveSavedName}` : "☁️ Save to Drive"}
+              </button>
+            ) : null}
+            <button
+              onClick={handleSaveSnapshot}
+              className="rounded-lg border border-blueprint-600 px-5 py-2.5 text-sm font-semibold text-blueprint-700 hover:bg-blueprint-50"
+            >
+              {snapshotSaved ? "✓ Snapshot saved" : "💾 Save Snapshot (JSON)"}
             </button>
             <button
               onClick={handleDownload}
@@ -113,10 +192,19 @@ export default function ResultsDashboard({ blueprint, onRestart }: {
               {downloading ? "Preparing…" : "⬇ Download Blueprint (DOCX)"}
             </button>
           </div>
+          {driveError && (
+            <p className="mt-2 text-sm text-red-600">{driveError}</p>
+          )}
+          {!driveConnected && (
+            <div className="mt-2 flex items-center gap-3">
+              <DriveConnect compact />
+            </div>
+          )}
         </div>
       </div>
 
       <div className="mx-auto max-w-5xl space-y-6 px-6 py-8">
+        {delta && <ProgressSinceLastMeeting delta={delta} />}
         {/* Executive summary */}
         <Section id="summary" kicker="The Plan" title="Executive Summary">
           <p className="text-lg leading-relaxed text-ink-700">{bp.executiveSummary}</p>
@@ -334,14 +422,37 @@ export default function ResultsDashboard({ blueprint, onRestart }: {
           </div>
         </Section>
 
-        <div className="pb-8 text-center">
-          <button
-            onClick={handleDownload}
-            disabled={downloading}
-            className="rounded-lg bg-blueprint-600 px-8 py-4 text-lg font-semibold text-white hover:bg-blueprint-700 disabled:opacity-50"
-          >
-            {downloading ? "Preparing…" : "⬇ Download Full Blueprint (DOCX)"}
-          </button>
+        <div className="space-y-3 pb-8 text-center">
+          <div className="flex flex-wrap justify-center gap-3">
+            {driveConnected && (
+              <button
+                onClick={handleSaveToDrive}
+                disabled={driveSaving}
+                className="rounded-lg bg-blueprint-600 px-8 py-4 text-lg font-semibold text-white hover:bg-blueprint-700 disabled:opacity-60"
+              >
+                {driveSaving ? "Saving…" : driveSavedName ? `✓ Saved: ${driveSavedName}` : "☁️ Save Meeting Snapshot to Drive"}
+              </button>
+            )}
+            <button
+              onClick={handleSaveSnapshot}
+              className="rounded-lg border border-blueprint-600 bg-white px-8 py-4 text-lg font-semibold text-blueprint-700 hover:bg-blueprint-50"
+            >
+              {snapshotSaved ? "✓ Snapshot saved" : "💾 Save Meeting Snapshot (JSON)"}
+            </button>
+            <button
+              onClick={handleDownload}
+              disabled={downloading}
+              className="rounded-lg bg-blueprint-600 px-8 py-4 text-lg font-semibold text-white hover:bg-blueprint-700 disabled:opacity-50"
+            >
+              {downloading ? "Preparing…" : "⬇ Download Full Blueprint (DOCX)"}
+            </button>
+          </div>
+          {driveError && <p className="text-sm text-red-600">{driveError}</p>}
+          <p className="mx-auto max-w-xl text-sm text-ink-500">
+            {driveConnected
+              ? "Saved to your Google Drive's Business Architect folder — every meeting gets its own dated snapshot."
+              : "Save the JSON snapshot after each client meeting. Load it next time to pick up exactly where you left off. Connect Google Drive above to auto-save every snapshot."}
+          </p>
         </div>
       </div>
     </div>
