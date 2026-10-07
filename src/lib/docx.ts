@@ -13,6 +13,7 @@ import {
 } from "docx";
 import { saveAs } from "file-saver";
 import type { Blueprint, PositionDetail } from "../types";
+import type { BlueprintDelta } from "./snapshot";
 
 const ACCENT = "B45309";
 const DARK = "1C1917";
@@ -85,7 +86,7 @@ function costTable(p: PositionDetail): Table {
   return new Table({ rows, width: { size: 100, type: WidthType.PERCENTAGE } });
 }
 
-export async function downloadBlueprintDocx(bp: Blueprint): Promise<void> {
+export async function downloadBlueprintDocx(bp: Blueprint, delta?: BlueprintDelta): Promise<void> {
   const children: (Paragraph | Table)[] = [];
 
   // Cover
@@ -197,6 +198,34 @@ export async function downloadBlueprintDocx(bp: Blueprint): Promise<void> {
   bp.risks.forEach((r) => {
     children.push(h2(r.risk), body(`Mitigation: ${r.mitigation}`));
   });
+
+  // 12. Progress since last meeting (only when a previous snapshot was loaded)
+  if (delta) {
+    children.push(
+      h1("12. Progress Since Last Meeting"),
+      body(`Compared against the ${delta.prevDate} snapshot.`),
+      h2("Key metrics"),
+      bullet(`Owner dependency: ${delta.dependency.prev}/100 → ${delta.dependency.curr}/100`),
+      bullet(`Overall business readiness: ${delta.overallReadiness.prev}% → ${delta.overallReadiness.curr}%`),
+      bullet(`Revenue: ${delta.revenue.prev} → ${delta.revenue.curr}`),
+      bullet(`Employees: ${delta.employees.prev} → ${delta.employees.curr}`),
+      bullet(`Owner hours/week: ${delta.ownerHours.prev} → ${delta.ownerHours.curr}`),
+      h2("Bottleneck status"),
+      bullet(`Last meeting's #1 constraint: ${delta.prevBottleneck || "—"}`),
+      bullet(`Now: ${delta.currBottleneck || "—"} (${delta.bottleneckStatus === "same" ? "still the constraint" : delta.bottleneckStatus === "still-present" ? "still on the list" : "previous bottleneck cleared"})`),
+      h2("Hiring progress (inferred from hat map — confirm with owner)")
+    );
+    delta.hiringProgress.forEach((h) =>
+      children.push(bullet(`${h.position} (${h.timing}): ${h.status === "hired" ? "HIRED" : "pending"}`))
+    );
+    children.push(h2("Completion scores by area"));
+    delta.completionScores.forEach((s) =>
+      children.push(bullet(`${s.area}: ${s.prev}% → ${s.curr}%`))
+    );
+    if (delta.newPositions.length > 0) {
+      children.push(body(`New positions in the org chart: ${delta.newPositions.join(", ")}`));
+    }
+  }
 
   const doc = new Document({
     sections: [{ children }],
